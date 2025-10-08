@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>VerbBattle Arena</title>
+<style>
+:root {
+  --bg: #0d0d0d;
+  --accent-1: #1DD3C0;
+  --accent-2: #00f5d4;
+  --accent-gold: #C9A961;
+  --glass: rgba(255,255,255,0.03);
+  font-family: 'DM Sans', 'Inter', -apple-system, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0d0d0d;
+  color: #fff;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at 30% 20%, rgba(201, 169, 97, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(201, 169, 97, 0.06) 0%, transparent 45%),
+              #0d0d0d;
+  pointer-events: none;
+  z-index: 0;
+}
+.elegant-curves {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.curve-elegant {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(1px);
+}
+.curve-elegant-1 {
+  width: 300px;
+  height: 600px;
+  top: -200px;
+  right: -100px;
+  border: 1.5px solid rgba(201, 169, 97, 0.18);
+  background: linear-gradient(135deg, rgba(201, 169, 97, 0.06) 0%, rgba(201, 169, 97, 0.04) 50%, transparent 100%);
+  transform: rotate(25deg);
+  animation: floatElegant 12s ease-in-out infinite;
+}
+.curve-elegant-2 {
+  width: 400px;
+  height: 800px;
+  bottom: -300px;
+  left: -150px;
+  border: 1px solid rgba(201, 169, 97, 0.15);
+  background: linear-gradient(135deg, rgba(201, 169, 97, 0.05) 0%, transparent 60%);
+  transform: rotate(-20deg);
+  animation: floatElegant 15s ease-in-out infinite reverse;
+}
+@keyframes floatElegant {
+  0%, 100% { transform: translateY(0) rotate(var(--base-rotation, 0deg)); opacity: 1; }
+  50% { transform: translateY(-20px) rotate(calc(var(--base-rotation, 0deg) + 2deg)); opacity: 0.7; }
+}
+.curve-elegant-1 { --base-rotation: 25deg; }
+.curve-elegant-2 { --base-rotation: -20deg; }
+.arena {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+.header {
+  text-align: center;
+  padding: 20px;
+  position: relative;
+  margin-bottom: 10px;
+}
+.title {
+  font-family: 'Space Grotesk', 'DM Sans', sans-serif;
+  font-size: 2.5em;
+  font-weight: 700;
+  background: linear-gradient(135deg, #C9A961 0%, rgba(201, 169, 97, 0.8) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.subtitle {
+  font-size: 0.75rem;
+  color: #8e8e93;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.author {
+  font-size: 0.65rem;
+  color: #636366;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+.score-bar {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+  padding: 15px;
+  background: rgba(28, 28, 30, 0.6);
+  backdrop-filter: blur(40px) saturate(150%);
+  border-radius: 15px;
+  border: 1px solid rgba(84, 84, 88, 0.25);
+}
+.stat {
+  text-align: center;
+}
+.stat-value {
+  font-size: 2em;
+  font-weight: bold;
+  color: var(--accent-gold);
+}
+.stat-label {
+  font-size: 0.8em;
+  color: #aaa;
+}
+.game-mode {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 30px 0;
+  flex-wrap: wrap;
+}
+.mode-card {
+  background: rgba(28, 28, 30, 0.6);
+  backdrop-filter: blur(40px) saturate(150%);
+  border: 1px solid rgba(84, 84, 88, 0.25);
+  border-radius: 15px;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  min-width: 140px;
+}
+.mode-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(201, 169, 97, 0.4);
+  box-shadow: 0 15px 30px rgba(201, 169, 97, 0.2);
+}
+.mode-card.active {
+  border-color: rgba(201, 169, 97, 0.5);
+  background: rgba(201, 169, 97, 0.1);
+}
+.mode-icon {
+  font-size: 1.8em;
+  margin-bottom: 5px;
+}
+.mode-title {
+  font-size: 0.9em;
+  font-weight: bold;
+  color: var(--accent-gold);
+  margin-bottom: 3px;
+}
+.battle-zone {
+  margin: 30px 0;
+  padding: 30px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 20px;
+  border: 1px solid rgba(29, 211, 192, 0.2);
+  min-height: 400px;
+}
+.question {
+  font-size: 1.5em;
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--accent-3);
+  font-weight: bold;
+}
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+.option-btn {
+  padding: 20px;
+  font-size: 1.1em;
+  border: 1px solid rgba(29, 211, 192, 0.3);
+  background: rgba(28, 28, 30, 0.6);
+  backdrop-filter: blur(40px);
+  color: #fff;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+  font-weight: bold;
+}
+.option-btn:hover {
+  transform: scale(1.05);
+  background: rgba(29, 211, 192, 0.15);
+  box-shadow: 0 0 20px rgba(29, 211, 192, 0.3);
+}
+.option-btn.correct {
+  background: rgba(29, 211, 192, 0.25);
+  border-color: #1DD3C0;
+  animation: correctPulse 0.5s;
+}
+.option-btn.correct::before {
+  content: '✓ ';
+  font-size: 1.5em;
+  color: #1DD3C0;
+}
+.option-btn.wrong {
+  background: rgba(201, 169, 97, 0.2);
+  border-color: rgba(201, 169, 97, 0.6);
+  animation: shake 0.5s;
+}
+.option-btn.wrong::before {
+  content: '✗ ';
+  font-size: 1.5em;
+  color: rgba(201, 169, 97, 0.8);
+}
+@keyframes correctPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+.verb-card {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 5px;
+  background: rgba(28, 28, 30, 0.6);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(29, 211, 192, 0.3);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 1.1em;
+}
+.verb-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(29, 211, 192, 0.4);
+}
+.verb-card.selected {
+  background: #1DD3C0;
+  color: #000;
+}
+.next-btn {
+  display: block;
+  margin: 30px auto;
+  padding: 15px 40px;
+  font-size: 1.2em;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  border: none;
+  border-radius: 15px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+.next-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 10px 30px rgba(0,245,212,0.5);
+}
+.combo {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 4em;
+  font-weight: bold;
+  color: var(--accent-3);
+  animation: comboExplode 1s;
+  pointer-events: none;
+  z-index: 1000;
+}
+@keyframes comboExplode {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+.categories {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 15px 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 5px 0;
+}
+.grammar-focus {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+.cat-tag {
+  padding: 8px 16px;
+  background: rgba(28, 28, 30, 0.6);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  border-radius: 20px;
+  font-size: 0.85em;
+  color: rgba(201, 169, 97, 0.9);
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.cat-tag:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(201, 169, 97, 0.3);
+}
+.cat-tag.active {
+  background: var(--accent-gold);
+  color: #000;
+  font-weight: bold;
+  border-color: var(--accent-gold);
+}
+.grammar-tag {
+  padding: 8px 16px;
+  background: rgba(28, 28, 30, 0.6);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(29, 211, 192, 0.3);
+  border-radius: 20px;
+  font-size: 0.85em;
+  color: rgba(29, 211, 192, 0.9);
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+.grammar-tag:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(29, 211, 192, 0.3);
+}
+.grammar-tag.active {
+  background: #1DD3C0;
+  color: #000;
+  font-weight: bold;
+  border-color: #1DD3C0;
+}
+</style>
+</head>
+<body>
+  <div class="elegant-curves">
+    <div class="curve-elegant curve-elegant-1"></div>
+    <div class="curve-elegant curve-elegant-2"></div>
+  </div>
+  
+  <div class="arena">
+    <div class="header">
+      <div class="title">VERBBATTLE</div>
+      <div class="subtitle">Intuitive & Immersive Grammar Practice</div>
+      <div class="author">by Majid Nashtai</div>
+      <div class="categories">
+        <span class="cat-tag active" data-cat="all">ALL</span>
+        <span class="cat-tag" data-cat="daily">Daily Routine</span>
+        <span class="cat-tag" data-cat="hobbies">Hobbies</span>
+        <span class="cat-tag" data-cat="school">School Life</span>
+        <span class="cat-tag" data-cat="social">Social</span>
+        <span class="cat-tag" data-cat="chores">Home</span>
+        <span class="cat-tag" data-cat="creative">Creative</span>
+      </div>
+      <div class="grammar-focus">
+        <span class="grammar-tag active" data-grammar="all">ALL</span>
+        <span class="grammar-tag" data-grammar="positive">✓ Positive</span>
+        <span class="grammar-tag" data-grammar="negative">✗ Negative</span>
+        <span class="grammar-tag" data-grammar="interrogative">? Interrogative</span>
+        <span class="grammar-tag" data-grammar="adverbs">⏰ Adverbs</span>
+        <span class="grammar-tag" data-grammar="continuous">🔄 Continuous</span>
+        <span class="grammar-tag" data-grammar="simple">⚡ Simple</span>
+      </div>
+    </div>
+
+    <div class="score-bar">
+      <div class="stat">
+        <div class="stat-value" id="score">0</div>
+        <div class="stat-label">SCORE</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="streak">0</div>
+        <div class="stat-label">STREAK 🔥</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="level">1</div>
+        <div class="stat-label">LEVEL</div>
+      </div>
+    </div>
+
+    <div class="game-mode">
+      <div class="mode-card active" data-mode="quick">
+        <div class="mode-icon">⚡</div>
+        <div class="mode-title">QUICK FIRE</div>
+        <div>Choose fast!</div>
+      </div>
+      <div class="mode-card" data-mode="match">
+        <div class="mode-icon">🎯</div>
+        <div class="mode-title">VERB HUNT</div>
+        <div>Find the verb!</div>
+      </div>
+      <div class="mode-card" data-mode="negative">
+        <div class="mode-icon">❌</div>
+        <div class="mode-title">DON'T ZONE</div>
+        <div>Negative power!</div>
+      </div>
+      <div class="mode-card" data-mode="build">
+        <div class="mode-icon">🏗️</div>
+        <div class="mode-title">SENTENCE FORGE</div>
+        <div>Build it right!</div>
+      </div>
+    </div>
+
+    <div class="battle-zone" id="battleZone">
+      <div class="question" id="question">Ready to battle?</div>
+      <div class="options" id="options"></div>
+      <button class="next-btn" id="nextBtn">START BATTLE</button>
+    </div>
+  </div>
+
+<script>
+const verbs = {
+  daily: ['wake', 'brush', 'eat', 'drink', 'shower', 'dress', 'sleep', 'cook', 'clean', 'wash'],
+  hobbies: ['play', 'draw', 'paint', 'dance', 'sing', 'read', 'write', 'listen', 'watch', 'collect'],
+  social: ['talk', 'chat', 'meet', 'visit', 'help', 'share', 'laugh', 'joke', 'invite', 'call'],
+  school: ['study', 'learn', 'practice', 'answer', 'ask', 'solve', 'calculate', 'present', 'discuss', 'review'],
+  chores: ['tidy', 'sweep', 'vacuum', 'organize', 'fold', 'iron', 'water', 'feed', 'walk', 'mow'],
+  creative: ['create', 'design', 'imagine', 'build', 'craft', 'compose', 'film', 'photograph', 'edit', 'upload']
+};
+
+const allVerbs = Object.values(verbs).flat();
+let score = 0, streak = 0, level = 1, currentMode = 'quick', currentQuestion = null, activeCategory = 'all', activeGrammar = 'all';
+
+const modes = {
+  quick: [
+    { q: 'She ___ breakfast every morning.', correct: 'eats', options: ['eat', 'eats', 'eating', 'is eating'], cats: ['daily'], grammar: ['simple', 'positive'] },
+    { q: 'They ___ soccer right now!', correct: 'are playing', options: ['play', 'plays', 'are playing', 'is playing'], cats: ['hobbies'], grammar: ['continuous', 'positive'] },
+    { q: 'I usually ___ my teeth twice daily.', correct: 'brush', options: ['brush', 'brushes', 'am brushing', 'brushing'], cats: ['daily'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: 'Look! He ___ on the phone.', correct: 'is talking', options: ['talk', 'talks', 'is talking', 'are talking'], cats: ['social'], grammar: ['continuous', 'positive'] },
+    { q: 'We ___ homework every evening.', correct: 'do', options: ['do', 'does', 'are doing', 'doing'], cats: ['school'], grammar: ['simple', 'positive'] },
+    { q: 'She ___ a picture now!', correct: 'is drawing', options: ['draw', 'draws', 'is drawing', 'drawing'], cats: ['hobbies', 'creative'], grammar: ['continuous', 'positive'] },
+    { q: 'My dad ___ dinner on Sundays.', correct: 'cooks', options: ['cook', 'cooks', 'is cooking', 'are cooking'], cats: ['daily', 'chores'], grammar: ['simple', 'positive'] },
+    { q: 'Listen! They ___ music upstairs.', correct: 'are listening', options: ['listen', 'listens', 'are listening', 'is listening'], cats: ['hobbies'], grammar: ['continuous', 'positive'] },
+    { q: 'I ___ to school by bus.', correct: 'go', options: ['go', 'goes', 'am going', 'going'], cats: ['school'], grammar: ['simple', 'positive'] },
+    { q: 'Right now, we ___ a game.', correct: 'are playing', options: ['play', 'plays', 'are playing', 'is playing'], cats: ['hobbies'], grammar: ['continuous', 'positive'] },
+    { q: 'He ___ the dishes after meals.', correct: 'washes', options: ['wash', 'washes', 'is washing', 'washing'], cats: ['chores'], grammar: ['simple', 'positive'] },
+    { q: 'She ___ a video right now.', correct: 'is editing', options: ['edit', 'edits', 'is editing', 'editing'], cats: ['creative'], grammar: ['continuous', 'positive'] },
+    { q: 'I ___ early on weekdays.', correct: 'wake', options: ['wake', 'wakes', 'am waking', 'waking'], cats: ['daily'], grammar: ['simple', 'positive'] },
+    { q: 'They ___ friends every weekend.', correct: 'visit', options: ['visit', 'visits', 'are visiting', 'visiting'], cats: ['social'], grammar: ['simple', 'positive'] },
+    { q: 'She always ___ her homework.', correct: 'does', options: ['do', 'does', 'is doing', 'doing'], cats: ['school'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: 'We often ___ at the park.', correct: 'play', options: ['play', 'plays', 'are playing', 'playing'], cats: ['hobbies'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: '___ you like ice cream?', correct: 'Do', options: ['Do', 'Does', 'Are', 'Is'], cats: ['daily'], grammar: ['simple', 'interrogative'] },
+    { q: '___ she study English?', correct: 'Does', options: ['Do', 'Does', 'Is', 'Are'], cats: ['school'], grammar: ['simple', 'interrogative'] },
+    { q: '___ they playing now?', correct: 'Are', options: ['Do', 'Does', 'Is', 'Are'], cats: ['hobbies'], grammar: ['continuous', 'interrogative'] },
+    { q: '___ he watching TV?', correct: 'Is', options: ['Do', 'Does', 'Is', 'Are'], cats: ['hobbies'], grammar: ['continuous', 'interrogative'] },
+    { q: 'I never ___ coffee.', correct: 'drink', options: ['drink', 'drinks', 'am drinking', 'drinking'], cats: ['daily'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: 'They sometimes ___ pizza.', correct: 'eat', options: ['eat', 'eats', 'are eating', 'eating'], cats: ['daily'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: 'He ___ the floor now.', correct: 'is sweeping', options: ['sweep', 'sweeps', 'is sweeping', 'sweeping'], cats: ['chores'], grammar: ['continuous', 'positive'] },
+    { q: 'We rarely ___ late.', correct: 'arrive', options: ['arrive', 'arrives', 'are arriving', 'arriving'], cats: ['school'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: '___ you cleaning your room?', correct: 'Are', options: ['Do', 'Does', 'Is', 'Are'], cats: ['chores'], grammar: ['continuous', 'interrogative'] },
+    { q: '___ she paint pictures?', correct: 'Does', options: ['Do', 'Does', 'Is', 'Are'], cats: ['creative'], grammar: ['simple', 'interrogative'] },
+    { q: 'My mom always ___ work early.', correct: 'leaves', options: ['leave', 'leaves', 'is leaving', 'leaving'], cats: ['daily'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: '___ they chat online?', correct: 'Do', options: ['Do', 'Does', 'Is', 'Are'], cats: ['social'], grammar: ['simple', 'interrogative'] },
+    { q: 'He ___ his bike now.', correct: 'is riding', options: ['ride', 'rides', 'is riding', 'riding'], cats: ['hobbies'], grammar: ['continuous', 'positive'] },
+    { q: '___ I singing well?', correct: 'Am', options: ['Do', 'Am', 'Is', 'Are'], cats: ['creative'], grammar: ['continuous', 'interrogative'] }
+  ],
+  negative: [
+    { q: 'I ___ like spicy food.', correct: "don't", options: ["don't", "doesn't"], cats: ['daily'], grammar: ['negative'] },
+    { q: 'She ___ play video games.', correct: "doesn't", options: ["don't", "doesn't"], cats: ['hobbies'], grammar: ['negative'] },
+    { q: 'They ___ watch horror movies.', correct: "don't", options: ["don't", "doesn't"], cats: ['hobbies'], grammar: ['negative'] },
+    { q: 'He ___ eat breakfast.', correct: "doesn't", options: ["don't", "doesn't"], cats: ['daily'], grammar: ['negative'] },
+    { q: 'We ___ study on Sundays.', correct: "don't", options: ["don't", "doesn't"], cats: ['school'], grammar: ['negative'] },
+    { q: 'My cat ___ like water.', correct: "doesn't", options: ["don't", "doesn't"], cats: ['daily'], grammar: ['negative'] },
+    { q: 'You ___ need a jacket.', correct: "don't", options: ["don't", "doesn't"], cats: ['daily'], grammar: ['negative'] },
+    { q: 'Mom ___ drink coffee.', correct: "doesn't", options: ["don't", "doesn't"], cats: ['daily'], grammar: ['negative'] },
+    { q: 'I ___ understand math.', correct: "don't", options: ["don't", "doesn't"], cats: ['school'], grammar: ['negative'] },
+    { q: 'The dog ___ bark much.', correct: "doesn't", options: ["don't", "doesn't"], cats: ['daily'], grammar: ['negative'] },
+    { q: 'We ___ clean on Fridays.', correct: "don't", options: ["don't", "doesn't"], cats: ['chores'], grammar: ['negative'] },
+    { q: 'He ___ chat online much.', correct: "doesn't", options: ["don't", "doesn't"], cats: ['social'], grammar: ['negative'] },
+    { q: 'They ___ paint anymore.', correct: "don't", options: ["don't", "doesn't"], cats: ['creative'], grammar: ['negative'] }
+  ],
+  match: [
+    { q: 'Find the DAILY ROUTINE sentence!', correct: 'I shower before breakfast', options: ['I shower before breakfast', 'She paints portraits', 'They discuss the topic', 'We dance together'], cats: ['daily'], grammar: ['simple', 'positive'] },
+    { q: 'Find the HOBBY sentence!', correct: 'He collects comic books', options: ['I sweep the floor', 'He collects comic books', 'They study math', 'She dresses quickly'], cats: ['hobbies'], grammar: ['simple', 'positive'] },
+    { q: 'Find the SCHOOL sentence!', correct: 'We calculate the answers', options: ['He jokes with friends', 'She irons clothes', 'We calculate the answers', 'I craft decorations'], cats: ['school'], grammar: ['simple', 'positive'] },
+    { q: 'Find the SOCIAL sentence!', correct: 'They invite their friends', options: ['They invite their friends', 'He vacuums the carpet', 'She composes music', 'I brush my hair'], cats: ['social'], grammar: ['simple', 'positive'] },
+    { q: 'Find the CHORES sentence!', correct: 'Mom folds the laundry', options: ['We sing loudly', 'I answer questions', 'Mom folds the laundry', 'They meet daily'], cats: ['chores'], grammar: ['simple', 'positive'] },
+    { q: 'Find the CREATIVE sentence!', correct: 'She designs cool graphics', options: ['He cleans the kitchen', 'She designs cool graphics', 'We visit grandma', 'I solve puzzles'], cats: ['creative'], grammar: ['simple', 'positive'] },
+    { q: 'Find the HOBBY sentence!', correct: 'I draw in my sketchbook', options: ['Dad mows the lawn', 'I draw in my sketchbook', 'She wakes early', 'We help others'], cats: ['hobbies'], grammar: ['simple', 'positive'] },
+    { q: 'Find the DAILY ROUTINE sentence!', correct: 'We eat dinner together', options: ['I edit videos', 'They learn Spanish', 'We eat dinner together', 'She laughs loudly'], cats: ['daily'], grammar: ['simple', 'positive'] },
+    { q: 'Find the SCHOOL sentence!', correct: 'I present my project', options: ['He waters plants', 'We dance at parties', 'I present my project', 'She calls friends'], cats: ['school'], grammar: ['simple', 'positive'] },
+    { q: 'Find the CREATIVE sentence!', correct: 'They film skateboard tricks', options: ['They film skateboard tricks', 'I tidy my desk', 'We drink smoothies', 'He chats online'], cats: ['creative'], grammar: ['continuous', 'positive'] },
+    { q: 'Find the CONTINUOUS action!', correct: 'She is painting now', options: ['She is painting now', 'I cook daily', 'We study hard', 'He walks home'], cats: ['creative'], grammar: ['continuous', 'positive'] },
+    { q: 'Find the CONTINUOUS action!', correct: 'They are chatting online', options: ['I meet friends', 'They are chatting online', 'She reads books', 'We play chess'], cats: ['social'], grammar: ['continuous', 'positive'] },
+    { q: 'Find the ADVERB sentence!', correct: 'I always wake early', options: ['I always wake early', 'She is sleeping', 'They eat lunch', 'He walks fast'], cats: ['daily'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: 'Find the ADVERB sentence!', correct: 'We often play games', options: ['I am running', 'We often play games', 'She draws cats', 'They sing well'], cats: ['hobbies'], grammar: ['simple', 'adverbs', 'positive'] }
+  ],
+  build: [
+    { q: 'Build: She / her room / cleans / every day', correct: 'She cleans her room every day', words: ['She', 'her room', 'cleans', 'every day'], cats: ['chores'], grammar: ['simple', 'positive'] },
+    { q: 'Build: now / playing / are / We / games', correct: 'We are playing games now', words: ['now', 'playing', 'are', 'We', 'games'], cats: ['hobbies'], grammar: ['continuous', 'positive'] },
+    { q: 'Build: always / He / homework / does / his', correct: 'He always does his homework', words: ['always', 'He', 'homework', 'does', 'his'], cats: ['school'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: 'Build: listening / is / to music / She / now', correct: 'She is listening to music now', words: ['listening', 'is', 'to music', 'She', 'now'], cats: ['hobbies'], grammar: ['continuous', 'positive'] },
+    { q: 'Build: breakfast / I / at 7am / eat / usually', correct: 'I usually eat breakfast at 7am', words: ['breakfast', 'I', 'at 7am', 'eat', 'usually'], cats: ['daily'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: 'Build: friends / meet / They / every Saturday', correct: 'They meet friends every Saturday', words: ['friends', 'meet', 'They', 'every Saturday'], cats: ['social'], grammar: ['simple', 'positive'] },
+    { q: 'Build: painting / now / is / a picture / He', correct: 'He is painting a picture now', words: ['painting', 'now', 'is', 'a picture', 'He'], cats: ['creative'], grammar: ['continuous', 'positive'] },
+    { q: 'Build: sometimes / We / the dishes / wash', correct: 'We sometimes wash the dishes', words: ['sometimes', 'We', 'the dishes', 'wash'], cats: ['chores'], grammar: ['simple', 'adverbs', 'positive'] },
+    { q: 'Build: are / They / now / studying / math', correct: 'They are studying math now', words: ['are', 'They', 'now', 'studying', 'math'], cats: ['school'], grammar: ['continuous', 'positive'] },
+    { q: 'Build: often / I / online / chat / with friends', correct: 'I often chat online with friends', words: ['often', 'I', 'online', 'chat', 'with friends'], cats: ['social'], grammar: ['simple', 'adverbs', 'positive'] }
+  ]
+};
+
+document.querySelectorAll('.mode-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    currentMode = card.dataset.mode;
+    loadQuestion();
+  });
+});
+
+document.querySelectorAll('.cat-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    document.querySelectorAll('.cat-tag').forEach(t => t.classList.remove('active'));
+    tag.classList.add('active');
+    activeCategory = tag.dataset.cat;
+    loadQuestion();
+  });
+});
+
+document.querySelectorAll('.grammar-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    document.querySelectorAll('.grammar-tag').forEach(t => t.classList.remove('active'));
+    tag.classList.add('active');
+    activeGrammar = tag.dataset.grammar;
+    loadQuestion();
+  });
+});
+
+document.getElementById('nextBtn').addEventListener('click', loadQuestion);
+
+function loadQuestion() {
+  let questions = modes[currentMode];
+  
+  if (activeCategory !== 'all') {
+    questions = questions.filter(q => q.cats && q.cats.includes(activeCategory));
+  }
+  
+  if (activeGrammar !== 'all') {
+    questions = questions.filter(q => q.grammar && q.grammar.includes(activeGrammar));
+  }
+  
+  if (questions.length === 0) {
+    document.getElementById('question').textContent = 'No questions for this combo! Try another filter.';
+    document.getElementById('options').innerHTML = '';
+    return;
+  }
+  
+  currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+  
+  document.getElementById('question').textContent = currentQuestion.q;
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+
+  if (currentMode === 'build') {
+    let selected = [];
+    currentQuestion.words.sort(() => Math.random() - 0.5).forEach(word => {
+      const card = document.createElement('div');
+      card.className = 'verb-card';
+      card.textContent = word;
+      card.addEventListener('click', () => {
+        if (card.classList.contains('selected')) {
+          card.classList.remove('selected');
+          selected = selected.filter(w => w !== word);
+        } else {
+          card.classList.add('selected');
+          selected.push(word);
+        }
+      });
+      optionsDiv.appendChild(card);
+    });
+
+    const checkBtn = document.createElement('button');
+    checkBtn.className = 'next-btn';
+    checkBtn.textContent = 'CHECK ANSWER';
+    checkBtn.onclick = () => {
+      const answer = selected.join(' ');
+      if (answer === currentQuestion.correct) {
+        showCombo('PERFECT! 💥');
+        updateScore(true);
+      } else {
+        showCombo('TRY AGAIN! 💀');
+        updateScore(false);
+      }
+      setTimeout(loadQuestion, 1500);
+    };
+    optionsDiv.appendChild(checkBtn);
+  } else {
+    currentQuestion.options.forEach(option => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = option;
+      btn.addEventListener('click', () => checkAnswer(btn, option));
+      optionsDiv.appendChild(btn);
+    });
+  }
+
+  document.getElementById('nextBtn').style.display = 'none';
+}
+
+function checkAnswer(btn, answer) {
+  const isCorrect = answer === currentQuestion.correct;
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+  
+  if (isCorrect) {
+    showCombo('BOOM! 💥');
+    updateScore(true);
+  } else {
+    showCombo('MISS! 💀');
+    updateScore(false);
+  }
+
+  document.querySelectorAll('.option-btn').forEach(b => b.style.pointerEvents = 'none');
+  setTimeout(loadQuestion, 1500);
+}
+
+function updateScore(correct) {
+  if (correct) {
+    score += 10 + (streak * 5);
+    streak++;
+    if (streak % 5 === 0) level++;
+  } else {
+    streak = 0;
+  }
+  
+  document.getElementById('score').textContent = score;
+  document.getElementById('streak').textContent = streak;
+  document.getElementById('level').textContent = level;
+}
+
+function showCombo(text) {
+  const combo = document.createElement('div');
+  combo.className = 'combo';
+  combo.textContent = text;
+  document.body.appendChild(combo);
+  setTimeout(() => combo.remove(), 1000);
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
